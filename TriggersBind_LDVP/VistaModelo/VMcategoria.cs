@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
 using System.Collections.ObjectModel;
+using System.Linq;
+using Xamarin.Forms.Internals;
 
 namespace TriggersBind_LDVP.VistaModelo
 {
@@ -14,6 +16,8 @@ namespace TriggersBind_LDVP.VistaModelo
     {
         #region VARIABLES
         string _Texto;
+        string _imagen;
+        bool _activadorAnimacionImg;
         ObservableCollection<Mcategorias> _listaCategorias;
 
         #endregion
@@ -28,10 +32,47 @@ namespace TriggersBind_LDVP.VistaModelo
         public ObservableCollection<Mcategorias> ListaCategorias
         {
             get { return _listaCategorias; }
-            set { SetValue(ref _listaCategorias, value);}
+            set { SetValue(ref _listaCategorias, value); }
+        }
+        public bool ActivadorAnimacionImg
+        {
+            get { return _activadorAnimacionImg; }
+            set { SetValue(ref _activadorAnimacionImg, value); }
+        }
+
+        public string Imagen
+        {
+            get { return _imagen; }
+            set { SetValue(ref _imagen, value); }
         }
         #endregion
         #region PROCESOS
+        public void Seleccionar(Mcategorias modelo)
+        {
+            var index = ListaCategorias
+                .ToList()
+                .FindIndex(p => p.descripcion == modelo.descripcion);
+
+            Imagen = modelo.imagen;
+            if (index <- 1)
+            {
+                Deseleccionar();
+                ActivadorAnimacionImg = true;
+                ListaCategorias[index].selected = true;
+                ListaCategorias[index].textColor = "#FFFFFF";
+                ListaCategorias[index].backgroundColor = "#FF506B";
+            }
+        }
+        public void Deseleccionar()
+        {
+            ListaCategorias.ForEach((item) =>
+            {
+                ActivadorAnimacionImg = false;
+                item.selected = false;
+                item.textColor = "#000000";
+                item.backgroundColor = "#EAEDF6";
+            });
+        }
         public void MostrarCategorias()
         {
             ListaCategorias = new ObservableCollection<Mcategorias>(Datos.Dcategorias.MostrarCategorias());
@@ -39,7 +80,8 @@ namespace TriggersBind_LDVP.VistaModelo
         #endregion
         #region COMANDOS
         //Esto es lo que ocupo para darle funcion al boton
-        public ICommand CalcularCommand => new Command(MostrarCategorias);
+        public ICommand CalcularCommand => new Command<Mcategorias>(Seleccionar);
+        public ICommand CalcularComman => new Command(MostrarCategorias);
         #endregion
     }
 }
